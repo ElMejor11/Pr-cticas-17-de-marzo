@@ -1,0 +1,119 @@
+---
+title: "Regresión lineal simple"
+author: "José María Avilés Morillo"
+date: "2024-03-15"
+output: html_document
+---
+
+##1
+
+#Por supuesto que si, y para eso está la arqueología, para poder hallar sucesos y otras cuestiones que por cualquier cosa no quedaron constatadas de manera escrita (no existencia de la misma, no una cosa importante en aquella época, etc) o que reafirman esos sucesos del pasado (ya que no siempre hay que hacer caso de lo escrito).
+
+##2
+
+#Al servir como indicador de la dirección y fuerza de la relación entre ambos puntos o variables, no establece este algún tipo de relación causa-efecto de una variable sobre otra(s)
+
+##3
+
+#Este concepto quiere decir que hay una relación entre el efecto que provoca algo y su propia causa. Un ejemplo sería: tomar medicinas provoca que te cures antes.
+
+##4
+
+#SOn la pendiente y la ordenada en el origen de la recta de regresión
+
+##5
+
+#No, porque el eje horizontal (x), es el eje de abscisas y el eje vertical (y) es el eje de ordenadas
+
+##6
+
+#Una recta de regresión es una línea recta que se ajusta a un conjunto de datos para mostrar la relación entre dos variables mientras que el plano de regresión es una superficie tridimensional con varias variables relacionadas entre sí en una regresión múltiple
+
+##7
+
+SOn: la independencia, la normalidad, la homocedasticidad y la linealidad 
+
+##8
+
+```{r, echo=TRUE}
+
+cuentas <- c(110,2,6,98,40,94,31,5,8,10)
+distancia <- c( 1.1,100.2,90.3,5.4,57.5,6.6,34.7,65.8,57.9,86.1)
+datos <- data.frame(distancia, cuentas)
+recta <- lm(cuentas ~ distancia, data = datos)
+summary(recta)
+
+```
+
+##9
+
+#La pendiente sería el ´1.0872 que figura en el apartado distancia y la intersección (intercept) equivalente es el 95.3710.
+
+##10
+
+#Que si esto ocurre tanto las variables independientes como la dependiente tendrán el valor 0.
+
+##11
+
+#El método de mínimos cuadrados
+
+##12
+
+```{r, echo=TRUE}
+
+distancia_nueva <- 1.1
+prediccion <- predict(recta, newdata = data.frame(distancia = distancia_nueva))
+print(prediccion)
+error_prediccion <- predict(recta, newdata = data.frame(distancia = distancia_nueva), se.fit = TRUE)$se.fit
+print(error_prediccion)
+```
+#El error sería de 9.57685
+
+##13
+
+#Lo calcularía así
+
+```{r, echo=TRUE}
+
+cuentas <- c(6, 98, 40, 94, 31, 5, 8, 10)
+predicciones <- c(-6.682842, 85.520196, 28.938591, 84.216973, 53.69983, 19.924631, 28.504183, -2.121561)
+residuos <- cuentas - predicciones
+print(residuos)
+
+```
+
+##14
+
+```{r, echo=TRUE}
+shapiro.test(residuos)
+```
+#Si cumple el supuesto de normalidad
+
+##15
+
+#La prueba y el entrenamiento. Usando diversos datos que nos aporten suficiente información, diferenciar entre datos independientes y dependientes, etc.
+
+##16
+
+```{r, echo=TRUE}
+library(caret)
+control <- trainControl(method = "cv", number = 5)
+modelo_cv <- train(cuentas ~ ., data = datos, method = "lm", trControl = control)
+print(modelo_cv)
+```
+
+##17
+
+#Pues hay un 5% de probabilidad que sea de forma azar este suceso.En el caso de 0,01, habrá un 1% de probabilidad de que sea al azar y un 99% que no.
+
+##18
+
+#Heterocedasticidad
+
+##19
+
+#El coeficiente de determinación
+
+##20
+
+#Una observación presenta apalancamiento si su lever es mayor que dos veces la media de los lever. La atípica presenta valores que son raros

@@ -1,0 +1,196 @@
+---
+title: "Correlación Lineal"
+author: "José María Avilés Morillo"
+output: html_document
+date: "2024-03-15"
+---
+
+##1
+
+#Es una medida con la finalidad de establecer una relación en forma de línea entre dos puntos distintos, que son nuestras variables (dan información cada uno del otro respectivamente), permitiendo saber cuanta dispersión hay entre ambas. 
+
+##2
+
+#Porque es una distribución normal de forma lineal, y por ello, se sigue unos patrones. La diferencia principal entre ambas pruebas (paramétrica y no paramétrica) es que las no paramétricas no tienen un patrón que las determine y por ello, son mediciones sin un control establecido, siendo libres.
+
+##3
+
+```{r echo=TRUE}
+
+library(readxl)
+data <-as.data.frame(read_excel("C:/Prácticas 17 de marzo/data.xls"))
+View(data)
+print(data)
+
+```
+
+```{r}
+#Función para agregar coeficientes de correlación
+panel.cor <- function(x, y, digits = 2, prefix = "", cex.cor, ...) {
+  usr <- par("usr")
+  on.exit(par(usr))
+  par(usr = c(0, 1, 0 ,1))
+  Cor <- abs(cor(x, y)) 
+  txt <- paste0(prefix, format(c(Cor, 0.123456789), digits = digits)[1])
+  if(missing(cex.cor)) {
+    cex.cor <- 0.4 / strwidth(txt)
+  }
+  text(0.5, 0.5, txt,
+       cex = 1 + cex.cor*Cor)
+}
+#Dibujamos la matriz de correlación
+pairs(data,
+      upper.panel = panel.cor, # Panel de correlación
+      lower.panel = panel.smooth) #Curvas de regresión suavizadas
+```
+
+##4
+
+```{r echo=TRUE}
+cor.test(data$peso,data$altura)
+```
+
+#Los resultados son -0.2244499 y 0.4823585. Que sea al 95% quiere decir que hay una probabilidad del 5% que este resultado sea al azar.
+
+##5
+
+```{r, warning = FALSE}
+library(correlation)
+resultados <- correlation(data)
+resultados
+```
+
+##6
+
+```{r, echo = TRUE}
+library(ggpubr)
+library(ggplot2)
+ggscatter(data, x = "longitud", y = "peso",
+          add = "reg.line", conf.int = TRUE,
+          cor.coef = TRUE, cor.method = "pearson",
+          xlab = "Longitud", ylab = "Peso")
+```
+
+##7
+
+```{r echo=TRUE}
+
+library(corrplot)
+corrplot(cor(data))
+
+```
+
+##8
+
+#a
+
+```{r echo=TRUE}
+
+dist_npiezas <- data.frame(
+  distancia = c(1.1,100.2,90.3,5.4,57.5,6.6,34.7,65.8,57.9,86.1),
+  n_piezas = c(110,2,6,98,40,94,31,5,8,10)
+  )
+dist_npiezas
+
+```
+
+#b
+
+```{r echo=TRUE}
+
+correlation_coef <- cor(dist_npiezas$distancia, dist_npiezas$n_piezas)
+correlation_coef
+
+```
+
+#c
+
+```{r echo=TRUE}
+
+cor.test(dist_npiezas$distancia, dist_npiezas$n_piezas)
+
+```
+
+#d
+
+```{r echo=TRUE}
+
+correlation_coef <- cor(dist_npiezas$distancia, dist_npiezas$n_piezas)
+n <- nrow(dist_npiezas)
+z <- 0.5 * log((1 + correlation_coef) / (1 - correlation_coef))
+se <- 1 / sqrt(n - 3)
+z_critical <- qnorm(0.975)
+lower <- tanh(z - z_critical * se)
+upper <- tanh(z + z_critical * se)
+
+cat("El intervalo de confianza al 95% para el coeficiente de correlación es: [", lower, ", ", upper, "]\n")
+
+```
+
+#e
+
+```{r echo=TRUE}
+
+library(ggpubr)
+ggscatter(dist_npiezas, x = "distancia", y = "n_piezas",
+          add ="reg.line", conf.int = TRUE,
+          cor.coef = TRUE, cor.method= "pearson",
+          xlab = "Distancia", ylab = "N_piezas")
+```
+
+#f
+
+#Si lo es.
+
+#g
+
+#Aunque suficiente en este caso, realmente sería necesario usar más muestras de referencia para poder hacer un análisis mejor (cuanto más mejor).
+
+##9
+
+
+```{r echo= TRUE}
+
+library(ggplot2)
+videojuegos <- 1:10
+discos <- 2*videojuegos + rnorm(10, mean = 0, sd = 5)
+df_lineal <- data.frame(videojuegos, discos)
+ggplot(df_lineal, aes(x=videojuegos, y=discos)) +
+  geom_point() + 
+  geom_smooth(method = "lm", se = FALSE) +
+  labs(x = "videojuegos", y = "discos") +
+  ggtitle("Relación Lineal entre Variables videojuegos y discos")
+
+```
+
+```{r echo=TRUE}
+
+x <- c(5, 6, 12, 16, 30)
+y <- c(13, 4, 3, 2, 1)
+df_monotona <- data.frame(x, y)
+ggplot(df_monotona, aes(x=x, y=y)) +
+  geom_point() +
+  geom_smooth(method = "loess", se = FALSE) +
+  labs(x="X", y="Y") +
+  ggtitle("monótona entre Variables X y Y")
+
+```
+#La diferencia es que la lineal se hace mediante una linea recta como ya se mencionó, pero la monótona no tiene porque estar supeditada a este tipo de línea recta, como bien se puede observar en la primera gráfica (lineal) y en la segunda (monótona).
+
+##10
+
+#Para los casos de correlación monótona, como se observa en el ejemplo de abajo, se debe usar la correlación Kendall o la Spearman.
+
+```{r echo=TRUE}
+
+x <- c(5, 6, 12, 16, 30)
+y <- c(13, 4, 3, 2, 1)
+df_monotona <- data.frame(x, y)
+
+correlation_kendall <- cor.test(df_monotona$x, df_monotona$y, method = "kendall")
+print(correlation_kendall)
+
+correlation_spearman <- cor.test(df_monotona$x, df_monotona$y, method = "spearman")
+print(correlation_spearman)
+
+```
